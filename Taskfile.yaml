@@ -1,0 +1,28 @@
+version: 3
+
+dotenv:
+  - .secrets/env.sh
+
+tasks:
+  dev:
+    interactive: true
+    cmds:
+      - npm run dev
+
+  container:build:
+    preconditions:
+      - sh: '[[ -n "{{.tag}}" ]]'
+        msg: "var tag must have a value"
+    vars:
+      Image: ghcr.io/kloudlite/domain-allocator:{{.tag}}
+    cmds:
+      - docker build  . -t {{.Image}}
+
+  container:push:
+    preconditions:
+      - sh: '[[ -n "{{.tag}}" ]]'
+        msg: "var tag must have a value"
+    vars:
+      Image: ghcr.io/kloudlite/domain-allocator:{{.tag}}
+    cmds:
+      - docker buildx build -t {{.Image}} --platform linux/arm64,linux/amd64 --push .
